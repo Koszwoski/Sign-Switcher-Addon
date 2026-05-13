@@ -96,6 +96,7 @@ export function init(bot, config, ctx) {
   }
 
   async function runPipeline(targetPos) {
+    const localPresets = { ...presets };
     busy = true;
     try {
       log(`[sign-switcher] approaching sign at ${targetPos}`);
@@ -146,7 +147,7 @@ export function init(bot, config, ctx) {
         log('[sign-switcher] sign not found after place');
         return;
       }
-      const preset = getRandomPreset(presets);
+      const preset = getRandomPreset(localPresets);
       if (preset) {
         await bot.updateSign(placedSign, preset, true);
         log(`[sign-switcher] replaced sign at ${targetPos}`);
@@ -166,7 +167,7 @@ export function init(bot, config, ctx) {
       const target = findNearbySign();
       if (target) {
         bot.pathfinder.stop();
-        runPipeline(target);
+        runPipeline(target).catch((err) => log(`[sign-switcher] unhandled pipeline error: ${err.message}`));
       }
     }
   }

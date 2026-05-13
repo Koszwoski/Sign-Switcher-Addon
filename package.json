@@ -1,0 +1,14 @@
+{
+  "name": "sign-switcher-addon",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test test/presets.test.mjs"
+  },
+  "peerDependencies": {
+    "mineflayer": ">=4",
+    "mineflayer-pathfinder": ">=2",
+    "vec3": ">=0.1"
+  }
+}

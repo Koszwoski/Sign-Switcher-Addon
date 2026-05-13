@@ -13,8 +13,12 @@ export async function loadPresets(filePath = DEFAULT_PATH) {
 }
 
 export async function savePresets(presets, filePath = DEFAULT_PATH) {
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, JSON.stringify({ presets }, null, 2));
+  try {
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify({ presets }, null, 2));
+  } catch (err) {
+    throw new Error(`Failed to save presets to ${filePath}: ${err.message}`);
+  }
 }
 
 export function matchesAnyPreset(lines, presets) {

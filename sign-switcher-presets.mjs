@@ -34,3 +34,7 @@ export function getRandomPreset(presets) {
   if (!values.length) return null;
   return values[Math.floor(Math.random() * values.length)];
 }
+
+export function toJsonLines(lines) {
+  return lines.map((line) => JSON.stringify({ text: line, font: 'minecraft:uniform' }));
+}

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { loadPresets, savePresets, matchesAnyPreset, getRandomPreset } from '../sign-switcher-presets.mjs';
+import { loadPresets, savePresets, matchesAnyPreset, getRandomPreset, toJsonLines } from '../sign-switcher-presets.mjs';
 
 test('loadPresets returns {} for missing file', async () => {
   const result = await loadPresets(join(tmpdir(), `ss-nonexistent-${Date.now()}.json`));
@@ -59,4 +59,25 @@ test('getRandomPreset returns only presets that exist in the map', () => {
     const result = getRandomPreset(presets);
     assert.ok(result === presets.A || result === presets.B);
   }
+});
+
+test('toJsonLines wraps each line in a JSON text component with minecraft:uniform', () => {
+  const result = toJsonLines(['Hello', 'World', '', '']);
+  assert.deepEqual(result, [
+    '{"text":"Hello","font":"minecraft:uniform"}',
+    '{"text":"World","font":"minecraft:uniform"}',
+    '{"text":"","font":"minecraft:uniform"}',
+    '{"text":"","font":"minecraft:uniform"}',
+  ]);
+});
+
+test('toJsonLines handles Unicode fancy text', () => {
+  const result = toJsonLines(['𝔽𝕠𝕟𝕥', 'ℂ𝕙𝕒𝕟𝕘𝕖𝕣', '', '']);
+  assert.equal(result[0], '{"text":"𝔽𝕠𝕟𝕥","font":"minecraft:uniform"}');
+  assert.equal(result[1], '{"text":"ℂ𝕙𝕒𝕟𝕘𝕖𝕣","font":"minecraft:uniform"}');
+});
+
+test('toJsonLines returns an array of the same length as input', () => {
+  assert.equal(toJsonLines(['a', 'b', 'c', 'd']).length, 4);
+  assert.equal(toJsonLines([]).length, 0);
 });

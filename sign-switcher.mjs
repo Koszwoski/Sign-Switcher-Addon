@@ -5,6 +5,7 @@ import {
   savePresets,
   matchesAnyPreset,
   getRandomPreset,
+  toJsonLines,
 } from './sign-switcher-presets.mjs';
 
 const { GoalNear } = goals;
@@ -149,7 +150,7 @@ export function init(bot, config, ctx) {
       }
       const preset = getRandomPreset(localPresets);
       if (preset) {
-        await bot.updateSign(placedSign, preset, true);
+        await bot.updateSign(placedSign, toJsonLines(preset), true);
         log(`[sign-switcher] replaced sign at ${targetPos}`);
       }
     } catch (err) {

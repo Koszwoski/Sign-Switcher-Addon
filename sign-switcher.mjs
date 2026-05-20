@@ -15,7 +15,9 @@ export const meta = {
   description: 'Wanders and replaces signs with random preset text.',
   defaultConfig: {
     scanIntervalTicks: 20,
-    wanderRange: 100,
+    // Keep within the default "tiny" view distance (2 chunks = 32 blocks).
+    // Increase if BOT_VIEW_DISTANCE is set to normal/far in .env.
+    wanderRange: 16,
     writeDelayMs: 250,
   },
 };
@@ -51,7 +53,7 @@ export function init(bot, config, ctx) {
   }
 
   function startWander() {
-    if (stopped) return;
+    if (stopped || !bot.entity) return;
     const pos = bot.entity.position;
     const range = config.wanderRange ?? 100;
     const x = Math.floor(pos.x) + Math.floor(Math.random() * (range * 2 + 1)) - range;
@@ -162,14 +164,18 @@ export function init(bot, config, ctx) {
 
   function tick() {
     if (stopped || busy) return;
-    if (!bot.pathfinder.isMoving()) startWander();
-    if (++scanTick >= (config.scanIntervalTicks ?? 20)) {
-      scanTick = 0;
-      const target = findNearbySign();
-      if (target) {
-        bot.pathfinder.stop();
-        runPipeline(target).catch((err) => log(`[sign-switcher] unhandled pipeline error: ${err.message}`));
+    try {
+      if (!bot.pathfinder.isMoving()) startWander();
+      if (++scanTick >= (config.scanIntervalTicks ?? 20)) {
+        scanTick = 0;
+        const target = findNearbySign();
+        if (target) {
+          bot.pathfinder.stop();
+          runPipeline(target).catch((err) => log(`[sign-switcher] unhandled pipeline error: ${err.message}`));
+        }
       }
+    } catch (err) {
+      log(`[sign-switcher] tick error: ${err.message}`);
     }
   }
 
@@ -179,7 +185,7 @@ export function init(bot, config, ctx) {
     bot.pathfinder.setMovements(movements);
     startWander();
     tickTimer = setInterval(tick, 50);
-  });
+  }).catch((err) => log(`[sign-switcher] init error: ${err.message}`));
 
   return {
     cleanup() {
